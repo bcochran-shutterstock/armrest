@@ -46,34 +46,60 @@ exports.postBody = function(test) {
 	});
 };
 
-exports.interpolate = function(test) {
-	client.get({
-		url: '/multi/:level/:structure',
-		params: { level: 'level', structure: 'structure' },
+exports.patchParams = function(test) {
+	client.patch({
+		url: '/echo-body',
+		params: { one: 1, two: 2 },
 		success: function(data) {
+			test.deepEqual(data, { one: 1, two: 2 }, 'got back what we patched as params');
+			test.done();
+		}
+	});
+};
+
+exports.patchBody = function(test) {
+	client.patch({
+		url: '/echo-body',
+		body: { one: 1, two: 2 },
+		success: function(data) {
+			test.deepEqual(data, { one: 1, two: 2 }, 'got back what we patched as body');
+			test.done();
+		}
+	});
+};
+
+exports.interpolateQuery = function(test) {
+	var query = { level: 'level', structure: 'structure' };
+	client.post({
+		url: '/multi/:level/:structure',
+		query: query,
+		success: function(data) {
+			test.deepEqual(query, { level: 'level', structure: 'structure' }, 'query object is not modified');
 			test.deepEqual(data, { level: 'level', structure: 'structure' }, 'got back interpolated values');
 			test.done();
 		}
 	});
 };
 
-exports.uninterpolate = function(test) {
+exports.interpolateParams = function(test) {
+	var params = { level: 'level', structure: 'structure' };
 	client.get({
 		url: '/multi/:level/:structure',
-		params: { level: 'level' },
+		params: params,
 		success: function(data) {
-			test.deepEqual(data, { level: 'level' }, 'uninterpolated values left alone');
+			test.deepEqual(params, { level: 'level', structure: 'structure' }, 'params object is not modified');
+			test.deepEqual(data, { level: 'level', structure: 'structure' }, 'got back interpolated values');
 			test.done();
 		}
 	});
 };
 
-exports.interpolatePostQuery = function(test) {
-	client.post({
+exports.interpolateParamsPartial = function(test) {
+	client.get({
 		url: '/multi/:level/:structure',
-		query: { level: 'level', structure: 'structure' },
+		params: { level: 'level' },
 		success: function(data) {
-			test.deepEqual(data, { level: 'level', structure: 'structure' }, 'interpolated values for post + q');
+			test.deepEqual(data, { level: 'level' }, 'uninterpolated values left alone');
 			test.done();
 		}
 	});
